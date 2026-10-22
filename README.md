@@ -1,4 +1,4 @@
-![logo](docs\header_with_logo.svg)
+![logo](docs/header_with_logo.svg)
 
 # Introduction
 
