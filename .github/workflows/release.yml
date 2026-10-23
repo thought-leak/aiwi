@@ -1,0 +1,116 @@
+name: Publish Plugin Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]+.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for the release (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify commit is on main branch
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::Commit ${{ github.sha }} (tag: ${{ github.ref_name }}) is not on the 'main' branch! Aborting release."
+            exit 1
+          fi
+          echo "Verified: Tagged commit is on the 'main' branch."
+
+      - name: Prepare release variables
+        id: vars
+        run: |
+          TAG="${{ inputs.tag_name || github.ref_name }}"
+          ZIP_NAME="aiwi-${TAG}.zip"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "zip_name=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${TAG}"
+          echo "Zip file name: ${ZIP_NAME}"
+
+      - name: Update version in Info.lua
+        env:
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          python3 - << 'EOF'
+          import re
+          import os
+
+          tag = os.environ.get('TAG', '1.0.0')
+          display = tag.lstrip('vV')
+          match = re.search(r'(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?', display)
+          major = int(match.group(1) or 0) if match else 1
+          minor = int(match.group(2) or 0) if match else 0
+          revision = int(match.group(3) or 0) if match else 0
+          build = int(match.group(4) or 0) if match else 0
+
+          version_entry = f"""    VERSION = {{
+              major = {major},
+              minor = {minor},
+              revision = {revision},
+              build = {build},
+              display = "{display}",
+          }},"""
+
+          path = 'aiwi.lrplugin/Info.lua'
+          with open(path, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          if re.search(r'VERSION\s*=\s*\{[^}]*\},?', content):
+              content = re.sub(r'VERSION\s*=\s*\{[^}]*\},?', version_entry.strip(), content)
+          elif re.search(r'VERSION\s*=\s*["\'][^"\']*["\'],?', content):
+              content = re.sub(r'VERSION\s*=\s*["\'][^"\']*["\'],?', version_entry.strip(), content)
+          elif 'LrPluginName' in content:
+              content = re.sub(r'(LrPluginName\s*=.*?,)', r'\1\n' + version_entry, content, count=1)
+          else:
+              content = re.sub(r'(return\s*\{)', r'\1\n' + version_entry, content, count=1)
+
+          with open(path, 'w', encoding='utf-8') as f:
+              f.write(content)
+
+          print(f"Updated Info.lua version to {display} (major={major}, minor={minor}, revision={revision}, build={build}):")
+          with open(path, 'r', encoding='utf-8') as f:
+              print(f.read())
+          EOF
+
+      - name: Create ZIP archive with aiwi.lrplugin
+        run: |
+          ZIP_NAME="${{ steps.vars.outputs.zip_name }}"
+          echo "Creating ${ZIP_NAME} containing aiwi.lrplugin..."
+          zip -r "${ZIP_NAME}" aiwi.lrplugin -x "*.git*" "*__pycache__*" "*.DS_Store*"
+          echo "Archive contents preview:"
+          unzip -l "${ZIP_NAME}" | head -n 25
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          ZIP_NAME="${{ steps.vars.outputs.zip_name }}"
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists. Uploading asset ${ZIP_NAME}..."
+            gh release upload "${TAG}" "${ZIP_NAME}" --clobber
+          else
+            echo "Creating release ${TAG} and uploading asset ${ZIP_NAME}..."
+            gh release create "${TAG}" "${ZIP_NAME}" \
+              --title "Release ${TAG}" \
+              --generate-notes
+          fi
