@@ -222,6 +222,7 @@ AIWI 通过 GitHub 仓库的 **Releases** 页面以 ZIP 压缩包形式发布。
 3. 点击左下角的**添加**（*Add*）按钮。
 4. 浏览并选中在上一步解压生成的 `.lrplugin` 文件夹，确认选择。
 5. AIWI 将显示在插件列表中，状态为**已启用**（*Installed and Running / Enabled*）。点击**完成**（*Done*）。
+6. 建议关闭 Adobe Lightroom Classic 并重新启动。这是由 Lightroom 的本地化语言加载机制决定的：与插件本身不同，其本地化翻译文件仅在 Lightroom 启动时才会被加载。
 
 后续如需更新插件，只需下载新版本压缩包并将文件覆盖解压到现有的 `.lrplugin` 目录中即可。
 

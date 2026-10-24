@@ -218,6 +218,7 @@ The resulting folder must have the `.lrplugin` extension and contain `Info.lua`,
 3. Click the **Add** button in the lower-left corner.
 4. Browse to and select the `.lrplugin` folder, then confirm.
 5. AIWI will appear in the list with status **Installed and Running** (Enabled). Click **Done**.
+6. It is recommended to close Adobe Lightroom Classic and relaunch it. This is due to how Lightroom handles localizations: unlike the plugin itself, localized strings are only loaded when Lightroom starts up.
 
 To update AIWI in the future, simply extract newer release files over the existing `.lrplugin` directory.
 
