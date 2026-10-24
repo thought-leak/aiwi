@@ -25,7 +25,7 @@ local DEFAULT_FRAMING_PROMPT =
 local DEFAULT_IDENTIFICATION_PROMPT =
     'Identify bird on photo taken in '
     .. '%region "{stateProvince}, {country}"|region "{stateProvince}"|country "{country}"|YOUR_DEFAULT_LOCATION% '
-    .. '%on "{dateTimeOriginalISO8601}" (date and time spicified in ISO 8601)%. '
+    .. '%on "{dateTimeOriginalISO8601}" (date and time specified in ISO 8601)%. '
     .. 'Provide response strictly in exactly two lines, with no formatting, markdown, '
     .. 'intro texts, explanations or punctuation. Use following format: '
     .. 'Line 1 - Official binomial scientific name of the species in Latin, '

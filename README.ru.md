@@ -184,7 +184,7 @@ Locate the bird on photo, and provide its bounding frame. Answer should contain 
 #### Промпт для идентификации птицы
 
 ```text
-Identify bird on photo taken in %region "{stateProvince}, {country}"|region "{stateProvince}"|country "{country}"|YOUR_DEFAULT_LOCATION% %on "{dateTimeOriginalISO8601}" (date and time spicified in ISO 8601)%. Provide response strictly in exactly two lines, with no formatting, markdown, intro texts, explanations or punctuation. Use following format: Line 1 - Official binomial scientific name of the species in Latin, Line 2 - Accepted scientific common name of the species in %{Language} but formatted so that the noun comes first|Latin%.
+Identify bird on photo taken in %region "{stateProvince}, {country}"|region "{stateProvince}"|country "{country}"|YOUR_DEFAULT_LOCATION% %on "{dateTimeOriginalISO8601}" (date and time specified in ISO 8601)%. Provide response strictly in exactly two lines, with no formatting, markdown, intro texts, explanations or punctuation. Use following format: Line 1 - Official binomial scientific name of the species in Latin, Line 2 - Accepted scientific common name of the species in %{Language} but formatted so that the noun comes first|Latin%.
 ```
 
 Обратите внимание, что в этом промпте есть три подстановки метаданных из фото. Вторая и третья подстановки очень простые, а вот на первой подстановке я остановлюсь подробнее. Первая подстановка пытается указать по очереди:
